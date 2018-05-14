@@ -1,0 +1,7 @@
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\bin\Debug\HVKTQS_UnboundedKnapsackProblem.exe.config
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\bin\Debug\HVKTQS_UnboundedKnapsackProblem.exe
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\bin\Debug\HVKTQS_UnboundedKnapsackProblem.pdb
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\obj\Debug\HVKTQS_UnboundedKnapsackProblem.csprojResolveAssemblyReference.cache
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\obj\Debug\HVKTQS_UnboundedKnapsackProblem.csproj.CoreCompileInputs.cache
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\obj\Debug\HVKTQS_UnboundedKnapsackProblem.exe
+C:\Users\Admin\source\repos\HVKTQS_UnboundedKnapsackProblem\HVKTQS_UnboundedKnapsackProblem\obj\Debug\HVKTQS_UnboundedKnapsackProblem.pdb
