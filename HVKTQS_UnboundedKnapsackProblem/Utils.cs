@@ -8,6 +8,56 @@ namespace HVKTQS_UnboundedKnapsackProblem
 {
     public static class Utils
     {
+        public static int CalculateWeight(string chromosome, int[] weights)
+        {
+            var gens = chromosome.Split(' ');
+            var totalWeight = 0;
+            for (int i = 0; i < gens.Length; i++)
+            {
+                totalWeight += ConvertStringToBinary(gens[i]) * weights[i];
+            }
+
+            return totalWeight;
+        }
+
+        public static int CalculateFitness(string chromosome, int[] profits)
+        {
+            var gens = chromosome.Split(' ');
+            var totalFitness = 0;
+            for (int i = 0; i < gens.Length; i++)
+            {
+                totalFitness += ConvertStringToBinary(gens[i]) * profits[i];
+            }
+
+            return totalFitness;
+        }
+
+        public static string CuttingGen(string chromosome, int end, int start = 0)
+        {
+            var gens = chromosome.Split(' ');
+            var result = new List<string>();
+            for (int i = 0; i < gens.Length; i++)
+            {
+                if (start == 0)
+                {
+                    if (i <= end)
+                    {
+                        result.Add(gens[i]);
+                    }
+                }
+                else
+                {
+                    if (i > start && i <= end)
+                    {
+                        result.Add(gens[i]);
+                    }
+                }
+            }
+            if (!result.Any()) return string.Empty;
+
+            return string.Join(" ", result);
+        }
+
         public static int ConvertStringToBinary(string binary)
         {
             int result = 0;

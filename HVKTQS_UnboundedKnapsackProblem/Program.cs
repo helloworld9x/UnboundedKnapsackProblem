@@ -19,6 +19,7 @@ namespace HVKTQS_UnboundedKnapsackProblem
         public static List<string> Chromosomes;
         public static List<int> Fitness;
 
+        public static int Generation;
         static Random rnd = new Random();
 
         static void Main(string[] args)
@@ -30,12 +31,50 @@ namespace HVKTQS_UnboundedKnapsackProblem
             // GAs
             InitPopulation();
 
-            // Parent Selection.
-            var parent = Parent();
-            var parentA = parent.Item1;
-            var parentB = parent.Item2;
+            for (int i = 0; i < Generation; i++)
+            {
+                // Sort By Fitness.
+                SortChromosomesByFitness();
 
-            
+                // Take 70% Chromosomes
+                var Take70Percent = PopulationSize * 70 / 100;
+                Chromosomes = Chromosomes.Take(Take70Percent).ToList();
+                Fitness = Fitness.Take(Take70Percent).ToList();
+
+                while (Chromosomes.Count <= PopulationSize)
+                {
+                    // Parent Selection.
+                    var parent = Parent();
+                    var parentAIndex = parent.Item1;
+                    var parentBIndex = parent.Item2;
+
+                    //Single-point
+                    //var division = rnd.Next(2, N);
+                    var division = 9;
+                    var childA = Utils.CuttingGen(Chromosomes[parentAIndex], division)
+                        + " " + Utils.CuttingGen(Chromosomes[parentBIndex], N, division);
+
+                    var childB = Utils.CuttingGen(Chromosomes[parentBIndex], division)
+                       + " " + Utils.CuttingGen(Chromosomes[parentAIndex], N, division);
+
+                    var totalWeightA = Utils.CalculateWeight(childA, Weight);
+                    if (totalWeightA > 0 && totalWeightA <= C)
+                    {
+                        Chromosomes.Add(childA);
+                        Fitness.Add(Utils.CalculateFitness(childA, Profits));
+                    }
+
+                    var totalWeightB = Utils.CalculateWeight(childB, Weight);
+                    if (totalWeightB > 0 && totalWeightB <= C)
+                    {
+                        Chromosomes.Add(childB);
+                        Fitness.Add(Utils.CalculateFitness(childB, Profits));
+                    }
+                }
+            }
+
+
+
         }
 
         static void Input()
@@ -48,6 +87,7 @@ namespace HVKTQS_UnboundedKnapsackProblem
             PopulationSize = 20;
             Chromosomes = new List<string>();
             Fitness = new List<int>();
+            Generation = 100;
         }
 
         static void PreProcess()
@@ -106,16 +146,18 @@ namespace HVKTQS_UnboundedKnapsackProblem
             if (parentA == parentB) return Parent();
             return new Tuple<int, int>(parentA, parentB);
         }
+
         static int ParentSelection()
         {
+            var size = Chromosomes.Count();
             //Tournament Selection
-            var parentIndex = rnd.Next(0, PopulationSize);
+            var parentIndex = rnd.Next(0, size);
             var bestFitness = Fitness[parentIndex];
 
-            var round = rnd.Next(2, PopulationSize);
+            var round = rnd.Next(2, size);
             for (int i = 1; i <= round; i++)
             {
-                var index = rnd.Next(0, PopulationSize);
+                var index = rnd.Next(0, size);
                 if (index != parentIndex && bestFitness < Fitness[index])
                 {
                     parentIndex = index;
@@ -124,6 +166,31 @@ namespace HVKTQS_UnboundedKnapsackProblem
             }
 
             return parentIndex;
+        }
+
+        static void SortChromosomesByFitness()
+        {
+            // One by one move boundary of unsorted subarray
+            var n = Chromosomes.Count;
+
+            for (int i = 0; i < n - 1; i++)
+            {
+                // Find the minimum element in unsorted array
+                int min_idx = i;
+                for (int j = i + 1; j < n; j++)
+                    if (Fitness[j] > Fitness[min_idx])
+                        min_idx = j;
+
+                // Swap the found minimum element with the first
+                // element
+                string temp = Chromosomes[min_idx];
+                Chromosomes[min_idx] = Chromosomes[i];
+                Chromosomes[i] = temp;
+
+                int indexTemp = Fitness[min_idx];
+                Fitness[min_idx] = Fitness[i];
+                Fitness[i] = indexTemp;
+            }
         }
     }
 }
