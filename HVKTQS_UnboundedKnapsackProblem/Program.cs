@@ -9,6 +9,7 @@ namespace HVKTQS_UnboundedKnapsackProblem
     class Program
     {
         public static int N; // n items.
+        public static int RunSetting;
         public static int[] Weight;
         public static int[] Profits;
         public static Dictionary<int, string[]> CombinationBitOfItem;
@@ -19,6 +20,9 @@ namespace HVKTQS_UnboundedKnapsackProblem
         public static List<string> Chromosomes;
         public static List<int> Fitness;
 
+        public static List<string> BestChromosomes;
+        public static List<int> BestFitness;
+
         public static int Generation;
         public static Random rnd = new Random();
         public const double MutationPercentage = 0.3;
@@ -27,91 +31,163 @@ namespace HVKTQS_UnboundedKnapsackProblem
         {
             //Input data.
             Input();
-            PreProcess();
+            GeneticAlgorithm();
 
-            // GAs
-            InitPopulation();
+            GreedyAlgorithm();
+            Console.ReadLine();
 
-            for (int i = 0; i < Generation; i++)
+        }
+
+        private static int max(int i, int j)
+        {
+            return (i > j) ? i : j;
+        }
+
+        private static int unboundedKnapsack(int W, int n, int[] val, int[] wt)
+        {
+            // dp[i] is going to store maximum value
+            // with knapsack capacity i.
+            int[] dp = new int[W + 1];
+
+            // Fill dp[] using above recursive formula
+            for (int i = 0; i <= W; i++)
             {
-                // Sort By Fitness.
-                SortChromosomesByFitness();
-
-                // Take 70% Chromosomes
-                var Take70Percent = PopulationSize * 70 / 100;
-                Chromosomes = Chromosomes.Take(Take70Percent).ToList();
-                Fitness = Fitness.Take(Take70Percent).ToList();
-
-                while (Chromosomes.Count < PopulationSize)
+                for (int j = 0; j < n; j++)
                 {
-                    // Parent Selection.
-                    var parent = Parent();
-                    var parentAIndex = parent.Item1;
-                    var parentBIndex = parent.Item2;
-
-                    //Single-point Crossover
-                    var division = rnd.Next(2, N - 1);
-                    var childA = Utils.CuttingGen(Chromosomes[parentAIndex], division)
-                        + " " + Utils.CuttingGen(Chromosomes[parentBIndex], N, division);
-
-                    var childB = Utils.CuttingGen(Chromosomes[parentBIndex], division)
-                       + " " + Utils.CuttingGen(Chromosomes[parentAIndex], N, division);
-
-                    var totalWeightA = Utils.CalculateWeight(childA, Weight);
-                    if (totalWeightA > 0 && totalWeightA <= C)
+                    if (wt[j] <= i)
                     {
-                        Chromosomes.Add(childA);
-                        Fitness.Add(Utils.CalculateFitness(childA, Profits));
-                    }
-
-                    if (Chromosomes.Count == PopulationSize) break;
-
-                    var totalWeightB = Utils.CalculateWeight(childB, Weight);
-                    if (totalWeightB > 0 && totalWeightB <= C)
-                    {
-                        Chromosomes.Add(childB);
-                        Fitness.Add(Utils.CalculateFitness(childB, Profits));
-                    }
-                }
-
-                //Mutation.
-                if (rnd.NextDouble() <= MutationPercentage)
-                {
-                    var indexMutation = rnd.Next(0, PopulationSize);
-                    var genMutation = rnd.Next(0, N);
-                    var chromosome = Chromosomes[indexMutation];
-                    var gens = chromosome.Split(' ');
-                    var newChromosome = new List<string>();
-                    for (int j = 0; j < gens.Length; j++)
-                    {
-                        var gen = gens[j];
-                        if (j == genMutation)
-                        {
-
-                            var increasingGen = Utils.ConvertStringToBinary(gen) + 1;
-                            var strGen = Convert.ToString(increasingGen, 2);
-                            if (gen.Length >= strGen.Length)
-                            {
-                                var newGen = Utils.ConvertBinaryToGen(increasingGen, gen.Length);
-                                if (!newGen.Contains('0')) break;
-
-                                newChromosome.Add(newGen);
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            newChromosome.Add(gen);
-                        }
-                    }
-
-                    if (newChromosome.Count == N
-                        && Utils.CalculateWeight(string.Join(" ", newChromosome), Weight) <= C)
-                    {
-                        Chromosomes[indexMutation] = string.Join(" ", newChromosome);
+                        dp[i] = Math.Max(dp[i], dp[i - wt[j]] + val[j]);
                     }
                 }
             }
+            return dp[W];
+        }
+
+        static void GreedyAlgorithm()
+        {
+            Console.WriteLine("Greedy Best Profits: "+ unboundedKnapsack(C, N, Profits, Weight));
+        }
+
+        static void GeneticAlgorithm()
+        {
+            PreProcess();
+            var kTimes = 5;
+            var runs = 5;
+            var t = 1;
+            var T = 6;
+            for (int r = 1; r <= runs; r++)
+            {
+                // GAs
+                InitPopulation();
+
+                for (int i = 0; i < Generation; i++)
+                {
+                    // Sort By Fitness.
+                    SortChromosomesByFitness();
+
+                    // Take 70% Chromosomes
+                    var Take70Percent = PopulationSize * 70 / 100;
+                    Chromosomes = Chromosomes.Take(Take70Percent).ToList();
+                    Fitness = Fitness.Take(Take70Percent).ToList();
+
+                    while (Chromosomes.Count < PopulationSize)
+                    {
+                        // Parent Selection.
+                        var parent = Parent();
+                        var parentAIndex = parent.Item1;
+                        var parentBIndex = parent.Item2;
+
+                        //Single-point Crossover
+                        var division = rnd.Next(2, N - 1);
+                        var childA = Utils.CuttingGen(Chromosomes[parentAIndex], division)
+                            + " " + Utils.CuttingGen(Chromosomes[parentBIndex], N, division);
+
+                        var childB = Utils.CuttingGen(Chromosomes[parentBIndex], division)
+                           + " " + Utils.CuttingGen(Chromosomes[parentAIndex], N, division);
+
+                        var totalWeightA = Utils.CalculateWeight(childA, Weight);
+                        if (totalWeightA > 0 && totalWeightA <= C)
+                        {
+                            Chromosomes.Add(childA);
+                            Fitness.Add(Utils.CalculateFitness(childA, Profits));
+                        }
+
+                        if (Chromosomes.Count == PopulationSize) break;
+
+                        var totalWeightB = Utils.CalculateWeight(childB, Weight);
+                        if (totalWeightB > 0 && totalWeightB <= C)
+                        {
+                            Chromosomes.Add(childB);
+                            Fitness.Add(Utils.CalculateFitness(childB, Profits));
+                        }
+                    }
+
+                    //Mutation.
+                    if (rnd.NextDouble() <= MutationPercentage)
+                    {
+                        var indexMutation = rnd.Next(0, PopulationSize);
+                        var genMutation = rnd.Next(0, N);
+                        var chromosome = Chromosomes[indexMutation];
+                        var gens = chromosome.Split(' ');
+                        var newChromosome = new List<string>();
+                        for (int j = 0; j < gens.Length; j++)
+                        {
+                            var gen = gens[j];
+                            if (j == genMutation)
+                            {
+
+                                var increasingGen = Utils.ConvertStringToBinary(gen) + 1;
+                                var strGen = Convert.ToString(increasingGen, 2);
+                                if (gen.Length >= strGen.Length)
+                                {
+                                    var newGen = Utils.ConvertBinaryToGen(increasingGen, gen.Length);
+                                    if (!newGen.Contains('0')) break;
+
+                                    newChromosome.Add(newGen);
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                newChromosome.Add(gen);
+                            }
+                        }
+
+                        if (newChromosome.Count == N
+                            && Utils.CalculateWeight(string.Join(" ", newChromosome), Weight) <= C)
+                        {
+                            Chromosomes[indexMutation] = string.Join(" ", newChromosome);
+                        }
+                    }
+                }
+
+                // Get best-value.
+                var maxValue = Fitness.Max();
+                var indexBestValue = Fitness.FindIndex(x => x == maxValue);
+
+                BestChromosomes.Add(Chromosomes[indexBestValue]);
+                BestFitness.Add(maxValue);
+
+                var maxs = BestChromosomes.GroupBy(x => x).Max(x => x.Count());
+                if (maxs == kTimes) break;
+
+                runs++;
+                t++;
+
+                if (t % T == 0)
+                {
+                    PopulationSize += PopulationSize * 2;
+                    Console.WriteLine("Increasing PopulationSize in round: " + r + "");
+                }
+
+                Console.WriteLine("Round: " + r + " Done!!!");
+            }
+            Console.WriteLine("-----------------------");
+            var indexResult = BestFitness.FindIndex(x => x == BestFitness.Max());
+            Console.WriteLine("Value: " + BestFitness.Max());
+            Console.WriteLine("Chromosomes: " + Chromosomes[indexResult]);
+            Console.WriteLine("Weight: " + Utils.CalculateWeight(Chromosomes[indexResult], Weight));
+
         }
 
         static void Input()
@@ -124,7 +200,10 @@ namespace HVKTQS_UnboundedKnapsackProblem
             PopulationSize = 20;
             Chromosomes = new List<string>();
             Fitness = new List<int>();
+            BestChromosomes = new List<string>();
+            BestFitness = new List<int>();
             Generation = 100;
+            RunSetting = 80;
         }
 
         static void PreProcess()
