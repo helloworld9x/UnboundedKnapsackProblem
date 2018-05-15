@@ -20,7 +20,8 @@ namespace HVKTQS_UnboundedKnapsackProblem
         public static List<int> Fitness;
 
         public static int Generation;
-        static Random rnd = new Random();
+        public static Random rnd = new Random();
+        public const double MutationPercentage = 0.3;
 
         static void Main(string[] args)
         {
@@ -41,16 +42,15 @@ namespace HVKTQS_UnboundedKnapsackProblem
                 Chromosomes = Chromosomes.Take(Take70Percent).ToList();
                 Fitness = Fitness.Take(Take70Percent).ToList();
 
-                while (Chromosomes.Count <= PopulationSize)
+                while (Chromosomes.Count < PopulationSize)
                 {
                     // Parent Selection.
                     var parent = Parent();
                     var parentAIndex = parent.Item1;
                     var parentBIndex = parent.Item2;
 
-                    //Single-point
-                    //var division = rnd.Next(2, N);
-                    var division = 9;
+                    //Single-point Crossover
+                    var division = rnd.Next(2, N - 1);
                     var childA = Utils.CuttingGen(Chromosomes[parentAIndex], division)
                         + " " + Utils.CuttingGen(Chromosomes[parentBIndex], N, division);
 
@@ -64,6 +64,8 @@ namespace HVKTQS_UnboundedKnapsackProblem
                         Fitness.Add(Utils.CalculateFitness(childA, Profits));
                     }
 
+                    if (Chromosomes.Count == PopulationSize) break;
+
                     var totalWeightB = Utils.CalculateWeight(childB, Weight);
                     if (totalWeightB > 0 && totalWeightB <= C)
                     {
@@ -71,10 +73,45 @@ namespace HVKTQS_UnboundedKnapsackProblem
                         Fitness.Add(Utils.CalculateFitness(childB, Profits));
                     }
                 }
+
+                //Mutation.
+                if (rnd.NextDouble() <= MutationPercentage)
+                {
+                    var indexMutation = rnd.Next(0, PopulationSize);
+                    var genMutation = rnd.Next(0, N);
+                    var chromosome = Chromosomes[indexMutation];
+                    var gens = chromosome.Split(' ');
+                    var newChromosome = new List<string>();
+                    for (int j = 0; j < gens.Length; j++)
+                    {
+                        var gen = gens[j];
+                        if (j == genMutation)
+                        {
+
+                            var increasingGen = Utils.ConvertStringToBinary(gen) + 1;
+                            var strGen = Convert.ToString(increasingGen, 2);
+                            if (gen.Length >= strGen.Length)
+                            {
+                                var newGen = Utils.ConvertBinaryToGen(increasingGen, gen.Length);
+                                if (!newGen.Contains('0')) break;
+
+                                newChromosome.Add(newGen);
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            newChromosome.Add(gen);
+                        }
+                    }
+
+                    if (newChromosome.Count == N
+                        && Utils.CalculateWeight(string.Join(" ", newChromosome), Weight) <= C)
+                    {
+                        Chromosomes[indexMutation] = string.Join(" ", newChromosome);
+                    }
+                }
             }
-
-
-
         }
 
         static void Input()
